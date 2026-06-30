@@ -136,7 +136,7 @@ function presetPreviewLabel(presetId: PresetId, config: OutputConfig) {
 }
 
 function choiceButtonClass(active: boolean) {
-  return `relative flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+  return `relative flex min-h-18 flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-20 ${
     active
       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
       : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50'
@@ -332,20 +332,20 @@ function CapabilityStatusButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="outline" className={`h-10 gap-2 px-3 transition-colors ${buttonColorClass}`}>
+        <Button variant="outline" className={`h-10 gap-1.5 px-2 transition-colors sm:gap-2 sm:px-3 ${buttonColorClass}`}>
           {isLoading ? (
             <Loader2Icon className="size-4 animate-spin" />
           ) : (
             <CpuIcon data-icon="inline-start" />
           )}
-          <span>硬件加速</span>
+          <span className="hidden min-[360px]:inline">硬件加速</span>
           {!isLoading && (
             <Badge
               variant="outline"
               className={
                 hardwareAccelerationSupported
-                  ? 'border-emerald-300 bg-emerald-100 px-1.5 py-0 text-xs text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                  : 'border-amber-300 bg-amber-100 px-1.5 py-0 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                  ? 'hidden border-emerald-300 bg-emerald-100 px-1.5 py-0 text-xs text-emerald-700 min-[520px]:inline-flex dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  : 'hidden border-amber-300 bg-amber-100 px-1.5 py-0 text-xs text-amber-700 min-[520px]:inline-flex dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300'
               }
             >
               {hardwareAccelerationSupported ? '支持' : '不支持'}
@@ -821,20 +821,20 @@ function App() {
 
   return (
     <TooltipProvider>
-      <main className="flex h-dvh flex-col overflow-hidden bg-background">
-        <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-3 overflow-hidden px-4 py-3 sm:px-6 lg:px-8">
-          <header className="flex shrink-0 items-center justify-between gap-4 border-b pb-3">
-            <div className="flex items-center gap-2.5">
+      <main className="flex min-h-dvh flex-col bg-background lg:h-dvh lg:overflow-hidden">
+        <div className="mx-auto flex min-h-dvh w-full max-w-7xl flex-1 flex-col gap-3 px-3 py-3 sm:px-6 lg:h-full lg:min-h-0 lg:overflow-hidden lg:px-8">
+          <header className="flex shrink-0 items-center justify-between gap-3 border-b pb-3 sm:gap-4">
+            <div className="flex min-w-0 items-center gap-2.5">
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <FileVideoIcon className="size-4" />
               </div>
-              <h1 className="text-xl font-semibold tracking-tight">
+              <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
                 视频本地压缩
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
               <StepIndicator steps={STEPS} currentStep={currentStep} completedSteps={completedSteps} />
-              <div className="hidden h-5 w-px bg-border sm:block" />
+              <div className="hidden h-5 w-px bg-border md:block" />
               <CapabilityStatusButton
                 capabilities={capabilities}
                 capabilityProbing={capabilityProbing}
@@ -845,7 +845,7 @@ function App() {
             </div>
           </header>
 
-          <section className="flex min-h-0 flex-1 flex-col gap-3">
+          <section className="flex flex-col gap-3 lg:min-h-0 lg:flex-1">
             {probeError ? (
               <Alert variant="destructive">
                 <AlertCircleIcon />
@@ -854,8 +854,8 @@ function App() {
               </Alert>
             ) : null}
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 items-stretch gap-3 lg:grid-cols-2">
-            <Card className="flex h-full min-h-0 flex-col pb-0">
+            <div className="grid grid-cols-1 items-stretch gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-2">
+            <Card className="flex flex-col pb-0 lg:h-full lg:min-h-0">
               <CardHeader className="shrink-0 pb-0">
                 <CardTitle className="flex items-center gap-2">
                   <FileVideoIcon data-icon="inline-start" />
@@ -863,14 +863,14 @@ function App() {
                 </CardTitle>
                 <CardDescription>支持 MP4 / MOV，源视频信息会在选择后自动读取。</CardDescription>
               </CardHeader>
-              <CardContent className="flex min-h-0 flex-1 flex-col gap-3 pb-4">
+              <CardContent className="flex flex-col gap-3 pb-4 lg:min-h-0 lg:flex-1">
                 <label
                   htmlFor="video-file"
                   onDragOver={(event) => event.preventDefault()}
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`flex min-h-48 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border px-4 py-5 text-center transition-all duration-200 ${dropZoneClass}`}
+                  className={`flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border px-4 py-5 text-center transition-all duration-200 sm:min-h-44 lg:min-h-48 lg:flex-1 ${dropZoneClass}`}
                 >
                   <div className={`transition-transform duration-200 ${isDraggingOver ? '-translate-y-1' : ''}`}>
                     {file && !isDraggingOver ? (
@@ -923,7 +923,7 @@ function App() {
                       </Badge>
                     ) : null}
                   </div>
-                  <div className="grid content-start gap-x-2 gap-y-0.5 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid content-start gap-x-2 gap-y-0.5 min-[480px]:grid-cols-2 xl:grid-cols-3">
                     {metadata
                       ? metadataStats(metadata).map((stat) => <MetaStatRow key={stat.label} {...stat} />)
                       : METADATA_STAT_LABELS.map((label, index) => (
@@ -940,20 +940,20 @@ function App() {
               </CardContent>
             </Card>
 
-            <div className={`flex min-h-0 h-full transition-opacity duration-300 ${running ? 'pointer-events-none opacity-50' : ''}`}>
-              <Card className="flex h-full w-full min-h-0 flex-col pb-0">
+            <div className={`flex transition-opacity duration-300 lg:h-full lg:min-h-0 ${running ? 'pointer-events-none opacity-50' : ''}`}>
+              <Card className="flex w-full flex-col pb-0 lg:h-full lg:min-h-0">
                 <CardHeader className="shrink-0 pb-0">
                   <CardTitle>输出参数</CardTitle>
                   <CardDescription>先选画质预设，再按需微调分辨率、帧率和码率。</CardDescription>
                 </CardHeader>
-                <CardContent className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pb-4">
+                <CardContent className="flex flex-col gap-5 pb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
                   {/* 画质预设 */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-1.5">
                       <SparklesIcon className="size-3.5 text-muted-foreground" />
                       <Label className="text-sm font-medium">画质预设</Label>
                     </div>
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                       {QUALITY_PRESETS.map((preset) => {
                         const active = config.presetId === preset.id
                         return (
@@ -1002,7 +1002,7 @@ function App() {
                         自定义
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                       {RESOLUTION_OPTIONS.map((resolution) => {
                         const active = config.width === resolution.width && config.height === resolution.height
                         const sourceMatch = metadata?.video
@@ -1079,7 +1079,7 @@ function App() {
                         </button>
                       </div>
                     </div>
-                    <div className="flex rounded-lg border bg-muted/30 p-1 gap-1">
+                    <div className="grid grid-cols-3 gap-1 rounded-lg border bg-muted/30 p-1">
                       {FRAME_RATE_OPTIONS.map((frameRate) => {
                         const active = config.frameRate === frameRate
                         return (
@@ -1087,7 +1087,7 @@ function App() {
                             key={frameRate}
                             type="button"
                             onClick={() => selectFrameRate(frameRate)}
-                            className={`flex flex-1 items-center justify-center rounded-md py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            className={`flex min-w-0 items-center justify-center rounded-md px-1 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               active
                                 ? 'bg-background shadow-sm text-foreground ring-1 ring-border'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -1174,7 +1174,7 @@ function App() {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="flex shrink-0 items-center justify-between gap-3">
+                <CardFooter className="flex shrink-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground">{config.width}×{config.height}</span>
                     <span aria-hidden>·</span>
@@ -1182,7 +1182,7 @@ function App() {
                     <span aria-hidden>·</span>
                     <span>{config.videoBitrateMbps} Mbps</span>
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 sm:text-right">
                     <p className="text-[11px] leading-none text-muted-foreground">预估大小</p>
                     <p className="text-base font-semibold leading-tight tabular-nums">{formatBytes(estimatedOutput)}</p>
                   </div>
