@@ -1,5 +1,6 @@
 import { canEncodeVideo } from 'mediabunny'
 
+import i18n from '@/i18n'
 import { classifyCapabilities, clonePreset } from '@/lib/presets'
 import type { CapabilityReport, OutputConfig, VideoMetadata } from '@/types/media'
 
@@ -32,23 +33,23 @@ export async function probeCapabilities(metadata?: VideoMetadata): Promise<Capab
   const warnings: string[] = []
 
   if (!webCodecs) {
-    warnings.push('当前浏览器缺少 WebCodecs，无法执行本地压缩。')
+    warnings.push(i18n.t('capability.webCodecsWarning'))
   }
 
   if (!webGpu) {
-    warnings.push('WebGPU 不可用，将使用 Mediabunny/WebCodecs 可行路径并标记为降级。')
+    warnings.push(i18n.t('capability.webGpuWarning'))
   }
 
   if (metadata?.video?.hdr) {
-    warnings.push('检测到 HDR 素材，输出色彩可能不符合预期。')
+    warnings.push(i18n.t('capability.hdrWarning'))
   }
 
   if (!h264Encode1080p60 && h264Encode1080p30) {
-    warnings.push('1080p60 H.264 编码不可用，已建议回退到 1080p30。')
+    warnings.push(i18n.t('capability.h264_1080p60_Warning'))
   }
 
   if (!h264Encode1080p60 && !h264Encode1080p30) {
-    warnings.push('H.264 MP4 编码不可用，请使用最新版桌面 Chrome/Edge。')
+    warnings.push(i18n.t('capability.h264None'))
   }
 
   const level = classifyCapabilities({

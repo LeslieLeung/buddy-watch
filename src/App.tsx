@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertCircleIcon,
   CheckCircle2Icon,
@@ -62,7 +63,8 @@ import { probeMediaFile } from '@/lib/mediaProbe'
 import { clonePreset, estimateOutputBytes } from '@/lib/presets'
 import { useVideoJob } from '@/hooks/useVideoJob'
 import { usePreventJobNavigation } from '@/hooks/usePreventJobNavigation'
-import type { CapabilityReport, OutputConfig, PresetId, VideoMetadata } from '@/types/media'
+import { type CapabilityReport, type OutputConfig, type PresetId, type VideoMetadata } from '@/types/media'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 type ResolutionOption = {
   label: string
@@ -80,24 +82,11 @@ const RESOLUTION_OPTIONS: ResolutionOption[] = [
 
 const FRAME_RATE_OPTIONS = [60, 30, 24]
 
-const QUALITY_PRESETS: {
-  id: PresetId
-  label: string
-  description: string
-  audioBitrateKbps: number
-  baseVideoBitrateMbps: number
-}[] = [
-  { id: 'quality', label: '高', description: '画质优先', audioBitrateKbps: 192, baseVideoBitrateMbps: 7 },
-  { id: 'upload', label: '中', description: '体积均衡', audioBitrateKbps: 160, baseVideoBitrateMbps: 5 },
-  { id: 'small', label: '低', description: '更小体积', audioBitrateKbps: 128, baseVideoBitrateMbps: 3 },
-  { id: 'custom', label: '自定义', description: '手动设置码率', audioBitrateKbps: 160, baseVideoBitrateMbps: 5 },
-]
-
-const PRESET_DESCRIPTION: Record<PresetId, string> = {
-  quality: '高预设会提高视频和音频码率，更适合运动画面或二次编辑素材。',
-  upload: '中预设在画质和体积之间取平衡，适合常规上传和分享。',
-  small: '低预设会优先压低体积，适合聊天发送或快速预览。',
-  custom: '自定义预设可手动设置视频码率和音频码率；分辨率与帧率可在各自分组中单独自定义。',
+const QUALITY_PRESET_DATA: Record<PresetId, { audioBitrateKbps: number; baseVideoBitrateMbps: number }> = {
+  quality: { audioBitrateKbps: 192, baseVideoBitrateMbps: 7 },
+  upload: { audioBitrateKbps: 160, baseVideoBitrateMbps: 5 },
+  small: { audioBitrateKbps: 128, baseVideoBitrateMbps: 3 },
+  custom: { audioBitrateKbps: 160, baseVideoBitrateMbps: 5 },
 }
 
 function recommendVideoBitrateMbps(input: {
@@ -107,7 +96,7 @@ function recommendVideoBitrateMbps(input: {
   frameRate: number
   fallback: number
 }) {
-  const preset = QUALITY_PRESETS.find((item) => item.id === input.presetId)
+  const preset = QUALITY_PRESET_DATA[input.presetId]
   if (!preset || input.presetId === 'custom') {
     return input.fallback
   }
@@ -119,7 +108,7 @@ function recommendVideoBitrateMbps(input: {
   return Math.round(Math.min(80, Math.max(1, scaled)) * 2) / 2
 }
 
-function presetPreviewLabel(presetId: PresetId, config: OutputConfig) {
+function presetPreviewLabel(t: (key: string, options?: Record<string, unknown>) => string, presetId: PresetId, config: OutputConfig) {
   if (presetId === 'custom') {
     return null
   }
@@ -132,7 +121,7 @@ function presetPreviewLabel(presetId: PresetId, config: OutputConfig) {
     fallback: config.videoBitrateMbps,
   })
 
-  return `约 ${mbps} Mbps`
+  return t('presets.bitrateHint', { mbps })
 }
 
 function choiceButtonClass(active: boolean) {
@@ -261,14 +250,17 @@ function CapabilityBadge({ label, ok }: { label: string; ok: boolean | null }) {
 }
 
 const METADATA_STAT_ICONS = [PackageIcon, ClockIcon, HardDriveIcon, MonitorIcon, Volume2Icon, Rotate3dIcon]
-const METADATA_STAT_LABELS = ['容器', '时长', '源大小', '视频', '音频', '旋转/HDR']
 
-function metadataStats(metadata: VideoMetadata) {
-  const resolution = metadata.video ? `${metadata.video.width}×${metadata.video.height}` : '无视频轨'
-  const codec = metadata.video?.codecString ?? metadata.video?.codec ?? '未知'
+function metadataStats(
+  metadata: VideoMetadata,
+  labels: string[],
+  t: (key: string, options?: Record<string, unknown>) => string,
+) {
+  const resolution = metadata.video ? `${metadata.video.width}×${metadata.video.height}` : t('input.noVideoTrack')
+  const codec = metadata.video?.codecString ?? metadata.video?.codec ?? t('format.unknown')
   const audio = metadata.audio
-    ? `${metadata.audio.codecString ?? metadata.audio.codec ?? '未知'} / ${metadata.audio.channels}ch / ${metadata.audio.sampleRate}Hz`
-    : '无音频'
+    ? `${metadata.audio.codecString ?? metadata.audio.codec ?? t('format.unknown')} / ${metadata.audio.channels}ch / ${metadata.audio.sampleRate}Hz`
+    : t('input.noAudio')
 
   const values = [
     metadata.container,
@@ -279,7 +271,7 @@ function metadataStats(metadata: VideoMetadata) {
     `${metadata.video?.rotation ?? 0}° / ${metadata.video?.hdr ? 'HDR' : 'SDR'}`,
   ]
 
-  return METADATA_STAT_LABELS.map((label, index) => ({
+  return labels.map((label, index) => ({
     icon: METADATA_STAT_ICONS[index],
     label,
     value: values[index],
@@ -291,11 +283,13 @@ function CapabilityStatusButton({
   capabilityProbing,
   hardwareAccelerationSupported,
   hardwareAccelerationDescription,
+  t,
 }: {
   capabilities: CapabilityReport | null
   capabilityProbing: boolean
   hardwareAccelerationSupported: boolean
   hardwareAccelerationDescription: string
+  t: (key: string, options?: Record<string, unknown>) => string
 }) {
   const isLoading = capabilityProbing || !capabilities
   const buttonColorClass = isLoading
@@ -324,10 +318,10 @@ function CapabilityStatusButton({
         : 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
   const bannerText =
     !capabilities || isLoading
-      ? '正在检测浏览器能力…'
+      ? t('capability.detecting')
       : hardwareAccelerationSupported
-        ? `完整支持 · ${passCount}/${totalCount} 项通过`
-        : `部分支持 · ${passCount}/${totalCount} 项通过`
+        ? t('capability.fullSupport', { passCount, totalCount })
+        : t('capability.partialSupport', { passCount, totalCount })
 
   return (
     <Tooltip>
@@ -338,7 +332,7 @@ function CapabilityStatusButton({
           ) : (
             <CpuIcon data-icon="inline-start" />
           )}
-          <span className="hidden min-[360px]:inline">硬件加速</span>
+          <span className="hidden min-[360px]:inline">{t('capability.hardwareAccel')}</span>
           {!isLoading && (
             <Badge
               variant="outline"
@@ -348,7 +342,7 @@ function CapabilityStatusButton({
                   : 'hidden border-amber-300 bg-amber-100 px-1.5 py-0 text-xs text-amber-700 min-[520px]:inline-flex dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300'
               }
             >
-              {hardwareAccelerationSupported ? '支持' : '不支持'}
+              {hardwareAccelerationSupported ? t('capability.supported') : t('capability.notSupported')}
             </Badge>
           )}
         </Button>
@@ -375,9 +369,9 @@ function CapabilityStatusButton({
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">能力检测</span>
+              <span className="text-sm font-medium">{t('capability.capabilityCheck')}</span>
               <span className="text-xs opacity-60">
-                {capabilityProbing ? '检测中' : capabilities ? '已检测' : '待检测'}
+                {capabilityProbing ? t('capability.checking') : capabilities ? t('capability.checked') : t('capability.pending')}
               </span>
             </div>
             <span className="text-xs leading-5 opacity-70">{hardwareAccelerationDescription}</span>
@@ -394,7 +388,7 @@ function CapabilityStatusButton({
             <div className="flex flex-col gap-1.5 border-t pt-3">
               <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
                 <AlertCircleIcon className="size-3.5" />
-                兼容性提示
+                {t('capability.compatibilityWarnings')}
               </span>
               {capabilities.warnings.map((warning) => (
                 <span key={warning} className="text-xs leading-5 text-amber-600/80 dark:text-amber-400/80">
@@ -403,7 +397,7 @@ function CapabilityStatusButton({
               ))}
             </div>
           ) : null}
-          <p className="text-center text-xs opacity-40">点击任意处关闭</p>
+          <p className="text-center text-xs opacity-40">{t('capability.clickToClose')}</p>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -412,6 +406,7 @@ function CapabilityStatusButton({
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const { t } = useTranslation()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -419,7 +414,7 @@ function ThemeToggle() {
   }, [])
 
   if (!mounted) {
-    return <Button variant="outline" size="icon" className="size-10 shrink-0" aria-label="切换主题" />
+    return <Button variant="outline" size="icon" className="size-10 shrink-0" aria-label={t('app.themeToggle')} />
   }
 
   return (
@@ -427,7 +422,7 @@ function ThemeToggle() {
       variant="outline"
       size="icon"
       className="size-10 shrink-0"
-      aria-label="切换主题"
+      aria-label={t('app.themeToggle')}
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
       {theme === 'dark' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
@@ -441,13 +436,15 @@ function StepIndicator({
   steps,
   currentStep,
   completedSteps,
+  ariaLabel,
 }: {
   steps: { id: StepId; label: string }[]
   currentStep: StepId
   completedSteps: Set<StepId>
+  ariaLabel: string
 }) {
   return (
-    <nav className="hidden items-center gap-0 md:flex" aria-label="流程步骤">
+    <nav className="hidden items-center gap-0 md:flex" aria-label={ariaLabel}>
       {steps.map((step, index) => {
         const isCompleted = completedSteps.has(step.id)
         const isCurrent = step.id === currentStep
@@ -491,11 +488,11 @@ function StepIndicator({
   )
 }
 
-const STEPS: { id: StepId; label: string }[] = [
-  { id: 'select', label: '选择文件' },
-  { id: 'config', label: '配置参数' },
-  { id: 'compress', label: '开始压缩' },
-  { id: 'download', label: '下载结果' },
+const STEPS: { id: StepId }[] = [
+  { id: 'select' },
+  { id: 'config' },
+  { id: 'compress' },
+  { id: 'download' },
 ]
 
 type ConfirmationDialogState = {
@@ -506,22 +503,8 @@ type ConfirmationDialogState = {
   destructive?: boolean
 }
 
-const RUNNING_TASK_CONFIRMATION: ConfirmationDialogState = {
-  title: '当前任务正在进行中',
-  description: '离开、后退或切换文件会中断正在进行的压缩任务。确认继续后，当前任务将无法恢复。',
-  confirmLabel: '继续并中断任务',
-  cancelLabel: '留在当前任务',
-  destructive: true,
-}
-
-const COMPLETED_TASK_CONFIRMATION: ConfirmationDialogState = {
-  title: '已有完成的压缩结果',
-  description: '开始新任务会清除当前输出结果和下载入口。请确认已经下载或不再需要这个结果。',
-  confirmLabel: '开始新任务',
-  cancelLabel: '保留结果',
-}
-
 function App() {
+  const { t, i18n } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null)
   const [capabilities, setCapabilities] = useState<CapabilityReport | null>(null)
@@ -535,6 +518,60 @@ function App() {
   const [confirmationDialog, setConfirmationDialog] = useState<ConfirmationDialogState | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const { progress, result, failure, running, start, cancel, resetResult } = useVideoJob()
+
+  const translatedSteps = useMemo(
+    () =>
+      STEPS.map((step) => ({
+        ...step,
+        label: t(`steps.${step.id}`),
+      })),
+    [t],
+  )
+
+  const qualityPresets = useMemo(
+    () =>
+      (Object.keys(QUALITY_PRESET_DATA) as PresetId[]).map((id) => ({
+        id,
+        label: t(`presets.${id}.label`),
+        description: t(`presets.${id}.description`),
+        audioBitrateKbps: QUALITY_PRESET_DATA[id].audioBitrateKbps,
+        baseVideoBitrateMbps: QUALITY_PRESET_DATA[id].baseVideoBitrateMbps,
+      })),
+    [t],
+  )
+
+  const metadataStatLabels = useMemo(
+    () => [
+      t('metadata.container'),
+      t('metadata.duration'),
+      t('metadata.fileSize'),
+      t('metadata.video'),
+      t('metadata.audio'),
+      t('metadata.rotationHdr'),
+    ],
+    [t],
+  )
+
+  const runningTaskConfirmation = useMemo<ConfirmationDialogState>(
+    () => ({
+      title: t('dialog.runningTaskTitle'),
+      description: t('dialog.runningTaskDesc'),
+      confirmLabel: t('dialog.runningTaskConfirm'),
+      cancelLabel: t('dialog.runningTaskCancel'),
+      destructive: true,
+    }),
+    [t],
+  )
+
+  const completedTaskConfirmation = useMemo<ConfirmationDialogState>(
+    () => ({
+      title: t('dialog.completedTaskTitle'),
+      description: t('dialog.completedTaskDesc'),
+      confirmLabel: t('dialog.completedTaskConfirm'),
+      cancelLabel: t('dialog.completedTaskCancel'),
+    }),
+    [t],
+  )
 
   const closeConfirmationDialog = useCallback((confirmed: boolean) => {
     confirmationResolverRef.current?.(confirmed)
@@ -552,8 +589,8 @@ function App() {
   }, [])
 
   const requestRunningTaskConfirmation = useCallback(
-    () => requestConfirmation(RUNNING_TASK_CONFIRMATION),
-    [requestConfirmation],
+    () => requestConfirmation(runningTaskConfirmation),
+    [requestConfirmation, runningTaskConfirmation],
   )
   const confirmJobNavigation = usePreventJobNavigation(running, requestRunningTaskConfirmation)
 
@@ -583,6 +620,11 @@ function App() {
       }
     }
   }, [downloadUrl])
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language
+    document.title = t('html.title')
+  }, [t, i18n.language])
 
   useEffect(() => {
     let active = true
@@ -641,11 +683,11 @@ function App() {
     }
 
     if (result) {
-      return requestConfirmation(COMPLETED_TASK_CONFIRMATION)
+      return requestConfirmation(completedTaskConfirmation)
     }
 
     return true
-  }, [confirmJobNavigation, requestConfirmation, result, running])
+  }, [confirmJobNavigation, requestConfirmation, result, running, completedTaskConfirmation])
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextFile = event.target.files?.[0]
@@ -741,7 +783,7 @@ function App() {
         }
       }
 
-      const preset = QUALITY_PRESETS.find((item) => item.id === presetId)
+      const preset = qualityPresets.find((item) => item.id === presetId)
 
       return {
         ...current,
@@ -793,9 +835,9 @@ function App() {
   )
   const hardwareAccelerationDescription = capabilities
     ? hardwareAccelerationSupported
-      ? '当前浏览器具备 WebCodecs 解码/编码与 H.264 输出能力，压缩时会请求硬件加速；实际是否调用硬件由浏览器和系统决定。通常速度更快、CPU 占用和耗电更低。'
-      : '当前浏览器缺少本地压缩所需 API、输入解码能力或 H.264 编码能力，可能无法压缩，或只能走软件路径。通常速度更慢、CPU 占用和耗电更高。'
-    : '正在检测当前浏览器的本地编解码能力。'
+      ? t('capability.hwAccelOk')
+      : t('capability.hwAccelBad')
+    : t('capability.hwAccelDetecting')
 
   // Step indicator logic
   const completedSteps = new Set<StepId>()
@@ -828,20 +870,22 @@ function App() {
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <FileVideoIcon className="size-4" />
               </div>
-              <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
-                视频本地压缩
-              </h1>
-            </div>
-            <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
-              <StepIndicator steps={STEPS} currentStep={currentStep} completedSteps={completedSteps} />
-              <div className="hidden h-5 w-px bg-border md:block" />
-              <CapabilityStatusButton
-                capabilities={capabilities}
-                capabilityProbing={capabilityProbing}
-                hardwareAccelerationSupported={hardwareAccelerationSupported}
-                hardwareAccelerationDescription={hardwareAccelerationDescription}
-              />
-              <ThemeToggle />
+                <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
+                  {t('app.title')}
+                </h1>
+              </div>
+              <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
+                <StepIndicator steps={translatedSteps} currentStep={currentStep} completedSteps={completedSteps} ariaLabel={t('app.stepsLabel')} />
+                <div className="hidden h-5 w-px bg-border md:block" />
+                <CapabilityStatusButton
+                  capabilities={capabilities}
+                  capabilityProbing={capabilityProbing}
+                  hardwareAccelerationSupported={hardwareAccelerationSupported}
+                  hardwareAccelerationDescription={hardwareAccelerationDescription}
+                  t={t}
+                />
+                <LanguageSwitcher />
+                <ThemeToggle />
             </div>
           </header>
 
@@ -849,7 +893,7 @@ function App() {
             {probeError ? (
               <Alert variant="destructive">
                 <AlertCircleIcon />
-                <AlertTitle>文件解析失败</AlertTitle>
+                <AlertTitle>{t('input.parseFailed')}</AlertTitle>
                 <AlertDescription>{probeError}</AlertDescription>
               </Alert>
             ) : null}
@@ -859,9 +903,9 @@ function App() {
               <CardHeader className="shrink-0 pb-0">
                 <CardTitle className="flex items-center gap-2">
                   <FileVideoIcon data-icon="inline-start" />
-                  输入视频
+                  {t('input.title')}
                 </CardTitle>
-                <CardDescription>支持 MP4 / MOV，源视频信息会在选择后自动读取。</CardDescription>
+                <CardDescription>{t('input.description')}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3 pb-4 lg:min-h-0 lg:flex-1">
                 <label
@@ -884,15 +928,15 @@ function App() {
                   <div className="flex max-w-full flex-col gap-1">
                     <span className="break-all text-base font-medium">
                       {isDraggingOver
-                        ? '松开以选择文件'
+                        ? t('input.dropZoneRelease')
                         : file
                           ? file.name
-                          : '拖入视频，或点击选择文件'}
+                          : t('input.dropZone')}
                     </span>
                     {(isDraggingOver || file) && (
                       <span className="text-sm text-muted-foreground">
                         {isDraggingOver
-                          ? '支持 MP4 / MOV 格式'
+                          ? t('input.supportedFormats')
                           : file
                             ? formatBytes(file.size)
                             : null}
@@ -911,27 +955,27 @@ function App() {
                 <div className="flex shrink-0 flex-col rounded-lg border bg-muted/40 px-3 py-2">
                   <div className="mb-1 flex shrink-0 items-center justify-between gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-medium">源视频信息</span>
+                      <span className="text-xs font-medium">{t('input.sourceInfo')}</span>
                       <span className="text-[11px] leading-tight text-muted-foreground">
-                        {probing ? '正在读取容器、轨道和浏览器能力。' : '选择视频后显示容器、轨道和编码信息。'}
+                        {probing ? t('input.probing') : t('input.idleHint')}
                       </span>
                     </div>
                     {probing ? (
                       <Badge variant="outline" className="h-6 shrink-0 gap-1.5 px-2 text-[11px]">
                         <Loader2Icon className="size-3 animate-spin" />
-                        读取中
+                        {t('input.reading')}
                       </Badge>
                     ) : null}
                   </div>
                   <div className="grid content-start gap-x-2 gap-y-0.5 min-[480px]:grid-cols-2 xl:grid-cols-3">
                     {metadata
-                      ? metadataStats(metadata).map((stat) => <MetaStatRow key={stat.label} {...stat} />)
-                      : METADATA_STAT_LABELS.map((label, index) => (
+                      ? metadataStats(metadata, metadataStatLabels, t).map((stat) => <MetaStatRow key={stat.label} {...stat} />)
+                      : metadataStatLabels.map((label, index) => (
                           <MetaStatRow
                             key={label}
                             icon={METADATA_STAT_ICONS[index]}
                             label={label}
-                            value={probing ? '读取中…' : '待选择'}
+                            value={probing ? t('input.readingEllipsis') : t('input.pending')}
                             placeholder
                           />
                         ))}
@@ -943,18 +987,18 @@ function App() {
             <div className={`flex transition-opacity duration-300 lg:h-full lg:min-h-0 ${running ? 'pointer-events-none opacity-50' : ''}`}>
               <Card className="flex w-full flex-col pb-0 lg:h-full lg:min-h-0">
                 <CardHeader className="shrink-0 pb-0">
-                  <CardTitle>输出参数</CardTitle>
-                  <CardDescription>先选画质预设，再按需微调分辨率、帧率和码率。</CardDescription>
+                  <CardTitle>{t('output.title')}</CardTitle>
+                  <CardDescription>{t('output.description')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-5 pb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
                   {/* 画质预设 */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-1.5">
                       <SparklesIcon className="size-3.5 text-muted-foreground" />
-                      <Label className="text-sm font-medium">画质预设</Label>
+                      <Label className="text-sm font-medium">{t('output.qualityPreset')}</Label>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                      {QUALITY_PRESETS.map((preset) => {
+                      {qualityPresets.map((preset) => {
                         const active = config.presetId === preset.id
                         return (
                           <button
@@ -970,18 +1014,18 @@ function App() {
                             <span className={`text-xs ${active ? 'opacity-75' : 'text-muted-foreground'}`}>
                               {preset.description}
                             </span>
-                            {presetPreviewLabel(preset.id, config) ? (
+                            {presetPreviewLabel(t, preset.id, config) ? (
                               <span
                                 className={`text-[11px] tabular-nums ${active ? 'opacity-60' : 'text-muted-foreground/70'}`}
                               >
-                                {presetPreviewLabel(preset.id, config)}
+                                {presetPreviewLabel(t, preset.id, config)}
                               </span>
                             ) : null}
                           </button>
                         )
                       })}
                     </div>
-                    <p className="text-xs leading-5 text-muted-foreground">{PRESET_DESCRIPTION[config.presetId]}</p>
+                    <p className="text-xs leading-5 text-muted-foreground">{t(`presets.${config.presetId}.detail`)}</p>
                   </div>
 
                   {/* 分辨率 */}
@@ -989,7 +1033,7 @@ function App() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <ScalingIcon className="size-3.5 text-muted-foreground" />
-                        <Label className="text-sm font-medium">分辨率</Label>
+                        <Label className="text-sm font-medium">{t('output.resolution')}</Label>
                       </div>
                       <button
                         type="button"
@@ -999,7 +1043,7 @@ function App() {
                         }`}
                       >
                         <PencilIcon className="size-3" />
-                        自定义
+                        {t('output.custom')}
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
@@ -1024,7 +1068,7 @@ function App() {
                               {resolution.description}
                             </span>
                             {sourceMatch && !active && metadata?.video && (
-                              <span className="mt-0.5 text-[10px] text-emerald-600 dark:text-emerald-400">源尺寸</span>
+                              <span className="mt-0.5 text-[10px] text-emerald-600 dark:text-emerald-400">{t('output.sourceSize')}</span>
                             )}
                           </button>
                         )
@@ -1034,7 +1078,7 @@ function App() {
                       <div className="grid gap-3 rounded-lg border bg-muted/25 p-3 sm:grid-cols-2">
                         <NumberField
                           id="output-width"
-                          label="宽度"
+                          label={t('output.width')}
                           value={config.width}
                           min={320}
                           max={3840}
@@ -1044,7 +1088,7 @@ function App() {
                         />
                         <NumberField
                           id="output-height"
-                          label="高度"
+                          label={t('output.height')}
                           value={config.height}
                           min={180}
                           max={2160}
@@ -1061,11 +1105,11 @@ function App() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <ClapperboardIcon className="size-3.5 text-muted-foreground" />
-                        <Label className="text-sm font-medium">帧率</Label>
+                        <Label className="text-sm font-medium">{t('output.frameRate')}</Label>
                       </div>
                       <div className="flex items-center gap-3">
                         {metadata?.video?.frameRate && (
-                          <span className="text-xs text-muted-foreground">源 {metadata.video.frameRate} fps</span>
+                          <span className="text-xs text-muted-foreground">{t('output.sourcePrefix')} {metadata.video.frameRate} fps</span>
                         )}
                         <button
                           type="button"
@@ -1075,7 +1119,7 @@ function App() {
                           }`}
                         >
                           <PencilIcon className="size-3" />
-                          自定义
+                          {t('output.custom')}
                         </button>
                       </div>
                     </div>
@@ -1102,7 +1146,7 @@ function App() {
                       <div className="rounded-lg border bg-muted/25 p-3">
                         <NumberField
                           id="frame-rate"
-                          label="自定义帧率"
+                          label={t('output.customFrameRate')}
                           value={config.frameRate}
                           min={1}
                           max={120}
@@ -1117,13 +1161,13 @@ function App() {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-1.5">
                       <SignalIcon className="size-3.5 text-muted-foreground" />
-                      <Label className="text-sm font-medium">码率</Label>
+                      <Label className="text-sm font-medium">{t('output.bitrate')}</Label>
                     </div>
                     {config.presetId === 'custom' ? (
                       <div className="flex flex-col gap-4 rounded-lg border bg-muted/25 p-3">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center justify-between gap-2">
-                            <Label htmlFor="bitrate">视频码率</Label>
+                            <Label htmlFor="bitrate">{t('output.videoBitrate')}</Label>
                             <span className="text-sm font-medium tabular-nums">{config.videoBitrateMbps} Mbps</span>
                           </div>
                           <Slider
@@ -1150,7 +1194,7 @@ function App() {
                         </div>
                         <NumberField
                           id="audio-bitrate"
-                          label="音频码率"
+                          label={t('output.audioBitrate')}
                           value={config.audioBitrateKbps}
                           min={32}
                           max={512}
@@ -1162,12 +1206,12 @@ function App() {
                     ) : (
                       <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-2.5">
                         <div className="flex flex-1 flex-col gap-0.5">
-                          <span className="text-xs text-muted-foreground">视频</span>
+                          <span className="text-xs text-muted-foreground">{t('output.videoLabel')}</span>
                           <span className="text-sm font-medium tabular-nums">{config.videoBitrateMbps} Mbps</span>
                         </div>
                         <div className="h-8 w-px shrink-0 bg-border" />
                         <div className="flex flex-1 flex-col gap-0.5 text-right">
-                          <span className="text-xs text-muted-foreground">音频</span>
+                          <span className="text-xs text-muted-foreground">{t('output.audioLabel')}</span>
                           <span className="text-sm font-medium tabular-nums">{config.audioBitrateKbps} kbps</span>
                         </div>
                       </div>
@@ -1183,7 +1227,7 @@ function App() {
                     <span>{config.videoBitrateMbps} Mbps</span>
                   </div>
                   <div className="shrink-0 sm:text-right">
-                    <p className="text-[11px] leading-none text-muted-foreground">预估大小</p>
+                    <p className="text-[11px] leading-none text-muted-foreground">{t('output.estimatedSize')}</p>
                     <p className="text-base font-semibold leading-tight tabular-nums">{formatBytes(estimatedOutput)}</p>
                   </div>
                 </CardFooter>
@@ -1196,11 +1240,11 @@ function App() {
               <CardHeader className="pb-0">
                 <CardTitle className="flex items-center gap-2">
                   <GaugeIcon data-icon="inline-start" />
-                  任务状态
+                  {t('task.status')}
                   {running && (
                     <span className="ml-1 flex items-center gap-1.5 text-sm font-normal text-muted-foreground">
                       <span className="size-2 animate-pulse rounded-full bg-primary" />
-                      运行中
+                      {t('task.running')}
                     </span>
                   )}
                 </CardTitle>
@@ -1212,15 +1256,15 @@ function App() {
                   className={running ? 'animate-pulse' : ''}
                 />
                 <div className={`grid gap-2 sm:grid-cols-2 ${running ? 'lg:grid-cols-4' : ''}`}>
-                  <StatItem label="进度" value={formatPercent(progress.progress)} />
+                  <StatItem label={t('task.progress')} value={formatPercent(progress.progress)} />
                   {running ? (
                     <>
-                      <StatItem label="速度" value={formatSpeed(progress.speed)} />
-                      <StatItem label="已处理" value={formatDuration(progress.processedSeconds)} />
-                      <StatItem label="预计剩余" value={formatDuration(progress.etaSeconds)} />
+                      <StatItem label={t('task.speed')} value={formatSpeed(progress.speed)} />
+                      <StatItem label={t('task.processed')} value={formatDuration(progress.processedSeconds)} />
+                      <StatItem label={t('task.eta')} value={formatDuration(progress.etaSeconds)} />
                     </>
                   ) : (
-                    <StatItem label="已处理" value={formatDuration(progress.processedSeconds)} />
+                    <StatItem label={t('task.processed')} value={formatDuration(progress.processedSeconds)} />
                   )}
                 </div>
                 {failure ? (
@@ -1245,14 +1289,14 @@ function App() {
                   ) : (
                     <PlayIcon data-icon="inline-start" />
                   )}
-                  {running ? '压缩中…' : '开始压缩'}
+                  {running ? t('task.compressing') : t('task.start')}
                 </Button>
                 {result ? (
                   <>
                     <Button asChild className="w-full sm:w-auto" variant="secondary">
                       <a href={downloadUrl ?? undefined} download={result.fileName}>
                         <DownloadIcon data-icon="inline-start" />
-                        下载 MP4
+                        {t('task.downloadMp4')}
                       </a>
                     </Button>
                     <Tooltip>
@@ -1260,10 +1304,10 @@ function App() {
                         <Button
                           className="w-full sm:size-9 sm:p-0"
                           variant="outline"
-                          aria-label="查看输出信息"
+                          aria-label={t('task.viewOutputInfo')}
                         >
                           <InfoIcon className="size-4" />
-                          <span className="sm:hidden">输出信息</span>
+                          <span className="sm:hidden">{t('task.outputInfo')}</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent
@@ -1275,14 +1319,14 @@ function App() {
                       >
                         <div className="flex items-center gap-2 border-b bg-muted/40 px-3.5 py-2.5 text-sm font-medium">
                           <PackageIcon className="size-4" />
-                          导出结果
+                          {t('task.exportResult')}
                         </div>
                         <div className="flex flex-col gap-3 p-3.5">
                           <div className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-md border">
                             <div className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5">
                               <span className="flex items-center gap-1 text-[11px] leading-none text-muted-foreground">
                                 <HardDriveIcon className="size-3" />
-                                大小
+                                {t('task.fileSize')}
                               </span>
                               <span className="max-w-full truncate text-sm font-semibold">
                                 {formatBytes(result.size)}
@@ -1291,7 +1335,7 @@ function App() {
                             <div className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5">
                               <span className="flex items-center gap-1 text-[11px] leading-none text-muted-foreground">
                                 <GaugeIcon className="size-3" />
-                                压缩率
+                                {t('task.compressionRatio')}
                               </span>
                               <span className="max-w-full truncate text-sm font-semibold">
                                 {formatRatio(result.compressionRatio)}
@@ -1300,7 +1344,7 @@ function App() {
                             <div className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5">
                               <span className="flex items-center gap-1 text-[11px] leading-none text-muted-foreground">
                                 <ClockIcon className="size-3" />
-                                耗时
+                                {t('task.duration')}
                               </span>
                               <span className="max-w-full truncate text-sm font-semibold">
                                 {formatDuration(result.durationSeconds)}
@@ -1310,7 +1354,7 @@ function App() {
                           <div className="flex items-center gap-2 rounded-md bg-muted/40 px-3 py-2">
                             <ScalingIcon className="size-3.5 shrink-0 text-muted-foreground" />
                             <div className="flex min-w-0 flex-col">
-                              <span className="text-[11px] leading-none text-muted-foreground">输出参数</span>
+                              <span className="text-[11px] leading-none text-muted-foreground">{t('output.parameters')}</span>
                               <span className="mt-1 truncate text-sm font-medium">
                                 {result.config.width}×{result.config.height} · {result.config.frameRate}fps ·{' '}
                                 {result.config.videoBitrateMbps}Mbps
@@ -1322,7 +1366,7 @@ function App() {
                     </Tooltip>
                     <Button className="w-full sm:w-auto" variant="outline" onClick={resetResult}>
                       <RotateCcwIcon data-icon="inline-start" />
-                      清除
+                      {t('task.clear')}
                     </Button>
                   </>
                 ) : null}
@@ -1330,10 +1374,10 @@ function App() {
                   <TooltipTrigger asChild>
                     <Button className="w-full sm:w-auto" variant="outline" disabled={!running} onClick={cancel}>
                       <SquareIcon data-icon="inline-start" />
-                      取消
+                      {t('task.cancel')}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>停止当前 Worker 任务</TooltipContent>
+                  <TooltipContent>{t('task.stopWorker')}</TooltipContent>
                 </Tooltip>
               </CardFooter>
             </Card>
@@ -1356,7 +1400,7 @@ function App() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => closeConfirmationDialog(false)}>
-              {confirmationDialog?.cancelLabel ?? '取消'}
+              {confirmationDialog?.cancelLabel ?? t('dialog.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               className={
@@ -1366,7 +1410,7 @@ function App() {
               }
               onClick={() => closeConfirmationDialog(true)}
             >
-              {confirmationDialog?.confirmLabel ?? '确认'}
+              {confirmationDialog?.confirmLabel ?? t('dialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

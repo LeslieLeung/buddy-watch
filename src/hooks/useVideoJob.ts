@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import i18n from '@/i18n'
 import type {
   FailureInfo,
   JobProgress,
@@ -17,7 +18,7 @@ const idleProgress: JobProgress = {
   processedSeconds: 0,
   speed: null,
   etaSeconds: null,
-  message: '等待选择视频',
+  message: i18n.t('job.waitingVideo'),
 }
 
 export function useVideoJob() {
@@ -44,7 +45,7 @@ export function useVideoJob() {
         processedSeconds: 0,
         speed: null,
         etaSeconds: null,
-        message: '正在启动压缩 Worker',
+        message: i18n.t('job.starting'),
       })
 
       const worker = new Worker(new URL('../workers/video-job-worker.ts', import.meta.url), {
@@ -68,11 +69,11 @@ export function useVideoJob() {
             processedSeconds: metadata.duration ?? 0,
             speed: null,
             etaSeconds: 0,
-            message: '压缩完成',
+            message: i18n.t('job.completed'),
           })
           setRunning(false)
           cleanupWorker()
-          toast.success('压缩完成，可以下载输出文件')
+          toast.success(i18n.t('job.completedToast'))
           return
         }
 
@@ -98,7 +99,7 @@ export function useVideoJob() {
           processedSeconds: 0,
           speed: null,
           etaSeconds: null,
-          message: '任务已取消',
+          message: i18n.t('job.cancelled'),
         })
         setRunning(false)
         cleanupWorker()
@@ -106,9 +107,9 @@ export function useVideoJob() {
 
       worker.onerror = (event) => {
         const nextFailure = {
-          title: 'Worker 运行失败',
+          title: i18n.t('job.workerFailed'),
           message: event.message,
-          suggestion: '请刷新页面后重试，或使用最新版桌面 Chrome/Edge。',
+          suggestion: i18n.t('job.workerFailedSuggestion'),
         }
         setFailure(nextFailure)
         setRunning(false)
@@ -137,7 +138,7 @@ export function useVideoJob() {
       processedSeconds: 0,
       speed: null,
       etaSeconds: null,
-      message: '任务已取消',
+      message: i18n.t('job.cancelled'),
     })
   }, [cleanupWorker])
 

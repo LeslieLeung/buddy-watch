@@ -1,3 +1,4 @@
+import i18n from '@/i18n'
 import type { CapabilityLevel, FailureInfo, OutputConfig, PresetId } from '@/types/media'
 
 export const OUTPUT_PRESETS: Record<PresetId, OutputConfig> = {
@@ -43,23 +44,25 @@ export const OUTPUT_PRESETS: Record<PresetId, OutputConfig> = {
   },
 }
 
-export const PRESET_LABELS: Record<PresetId, { name: string; description: string }> = {
-  upload: {
-    name: '上传推荐',
-    description: '1080p60 H.264 10Mbps，适合运动画面和平台上传前压缩。',
-  },
-  small: {
-    name: '更小体积',
-    description: '1080p30 H.264 6Mbps，优先降低文件体积。',
-  },
-  quality: {
-    name: '更高质量',
-    description: '1080p60 H.264 14Mbps，保留更多运动细节。',
-  },
-  custom: {
-    name: '自定义',
-    description: '手动调整帧率和码率，仍以 H.264 MP4 为输出。',
-  },
+export function getPresetLabels(): Record<PresetId, { name: string; description: string }> {
+  return {
+    upload: {
+      name: i18n.t('presets.upload.label'),
+      description: i18n.t('presets.upload.detail'),
+    },
+    small: {
+      name: i18n.t('presets.small.label'),
+      description: i18n.t('presets.small.detail'),
+    },
+    quality: {
+      name: i18n.t('presets.quality.label'),
+      description: i18n.t('presets.quality.detail'),
+    },
+    custom: {
+      name: i18n.t('presets.custom.label'),
+      description: i18n.t('presets.custom.detail'),
+    },
+  }
 }
 
 export function clonePreset(id: PresetId): OutputConfig {
@@ -102,47 +105,47 @@ export function mapErrorToFailure(error: unknown): FailureInfo {
 
   if (lower.includes('canceled') || lower.includes('cancelled')) {
     return {
-      title: '任务已取消',
-      message: '当前压缩任务已经停止。',
-      suggestion: '可以重新选择参数后再次开始。',
+      title: i18n.t('job.cancelled'),
+      message: i18n.t('job.cancelledMessage'),
+      suggestion: i18n.t('job.cancelledSuggestion'),
     }
   }
 
   if (lower.includes('unsupported') || lower.includes('format')) {
     return {
-      title: '输入格式暂不支持',
+      title: i18n.t('job.unsupportedFormat'),
       message,
-      suggestion: '请优先使用 MP4/MOV，视频轨建议为 H.264 或 HEVC，音频建议为 AAC。',
+      suggestion: i18n.t('job.unsupportedSuggestion'),
     }
   }
 
   if (lower.includes('encode') || lower.includes('encodable')) {
     return {
-      title: '当前浏览器无法编码目标视频',
+      title: i18n.t('job.encodeFailed'),
       message,
-      suggestion: '请使用最新版桌面 Chrome/Edge，或降到 1080p30 后重试。',
+      suggestion: i18n.t('job.encodeSuggestion'),
     }
   }
 
   if (lower.includes('decode') || lower.includes('decodable')) {
     return {
-      title: '当前浏览器无法解码源视频',
+      title: i18n.t('job.decodeFailed'),
       message,
-      suggestion: '如果源文件是 HEVC/HDR/MOV，请先转成 SDR H.264 MP4 后再试。',
+      suggestion: i18n.t('job.decodeSuggestion'),
     }
   }
 
   if (lower.includes('memory') || lower.includes('quota')) {
     return {
-      title: '处理时内存不足',
+      title: i18n.t('job.memoryError'),
       message,
-      suggestion: '请尝试更短素材、1080p30、更低码率，或关闭其他占用内存的标签页。',
+      suggestion: i18n.t('job.memorySuggestion'),
     }
   }
 
   return {
-    title: '压缩失败',
+    title: i18n.t('job.defaultFailed'),
     message,
-    suggestion: '请换用最新版桌面 Chrome/Edge，或选择更低帧率和码率后重试。',
+    suggestion: i18n.t('job.defaultSuggestion'),
   }
 }

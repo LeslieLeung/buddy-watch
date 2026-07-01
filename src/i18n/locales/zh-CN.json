@@ -1,0 +1,165 @@
+{
+  "app": {
+    "title": "视频本地压缩",
+    "themeToggle": "切换主题",
+    "stepsLabel": "流程步骤"
+  },
+  "steps": {
+    "select": "选择文件",
+    "config": "配置参数",
+    "compress": "开始压缩",
+    "download": "下载结果"
+  },
+  "capability": {
+    "hardwareAccel": "硬件加速",
+    "supported": "支持",
+    "notSupported": "不支持",
+    "detecting": "正在检测浏览器能力…",
+    "fullSupport": "完整支持 · {{passCount}}/{{totalCount}} 项通过",
+    "partialSupport": "部分支持 · {{passCount}}/{{totalCount}} 项通过",
+    "capabilityCheck": "能力检测",
+    "checking": "检测中",
+    "checked": "已检测",
+    "pending": "待检测",
+    "hwAccelOk": "当前浏览器具备 WebCodecs 解码/编码与 H.264 输出能力，压缩时会请求硬件加速；实际是否调用硬件由浏览器和系统决定。通常速度更快、CPU 占用和耗电更低。",
+    "hwAccelBad": "当前浏览器缺少本地压缩所需 API、输入解码能力或 H.264 编码能力，可能无法压缩，或只能走软件路径。通常速度更慢、CPU 占用和耗电更高。",
+    "hwAccelDetecting": "正在检测当前浏览器的本地编解码能力。",
+    "compatibilityWarnings": "兼容性提示",
+    "clickToClose": "点击任意处关闭",
+    "webCodecsWarning": "当前浏览器缺少 WebCodecs，无法执行本地压缩。",
+    "webGpuWarning": "WebGPU 不可用，将使用 Mediabunny/WebCodecs 可行路径并标记为降级。",
+    "hdrWarning": "检测到 HDR 素材，输出色彩可能不符合预期。",
+    "h264_1080p60_Warning": "1080p60 H.264 编码不可用，已建议回退到 1080p30。",
+    "h264None": "H.264 MP4 编码不可用，请使用最新版桌面 Chrome/Edge。"
+  },
+  "input": {
+    "title": "输入视频",
+    "description": "支持 MP4 / MOV，源视频信息会在选择后自动读取。",
+    "sourceInfo": "源视频信息",
+    "probing": "正在读取容器、轨道和浏览器能力。",
+    "idleHint": "选择视频后显示容器、轨道和编码信息。",
+    "reading": "读取中",
+    "pending": "待选择",
+    "readingEllipsis": "读取中…",
+    "dropZone": "拖入视频，或点击选择文件",
+    "dropZoneRelease": "松开以选择文件",
+    "supportedFormats": "支持 MP4 / MOV 格式",
+    "noVideoTrack": "无视频轨",
+    "noAudio": "无音频",
+    "parseFailed": "文件解析失败"
+  },
+  "metadata": {
+    "container": "容器",
+    "duration": "时长",
+    "fileSize": "源大小",
+    "video": "视频",
+    "audio": "音频",
+    "rotationHdr": "旋转/HDR"
+  },
+  "output": {
+    "title": "输出参数",
+    "description": "先选画质预设，再按需微调分辨率、帧率和码率。",
+    "qualityPreset": "画质预设",
+    "resolution": "分辨率",
+    "custom": "自定义",
+    "width": "宽度",
+    "height": "高度",
+    "frameRate": "帧率",
+    "customFrameRate": "自定义帧率",
+    "bitrate": "码率",
+    "videoBitrate": "视频码率",
+    "audioBitrate": "音频码率",
+    "videoLabel": "视频",
+    "audioLabel": "音频",
+    "estimatedSize": "预估大小",
+    "sourceSize": "源尺寸",
+    "sourcePrefix": "源",
+    "parameters": "输出参数"
+  },
+  "presets": {
+    "quality": {
+      "label": "高",
+      "description": "画质优先",
+      "detail": "高预设会提高视频和音频码率，更适合运动画面或二次编辑素材。"
+    },
+    "upload": {
+      "label": "中",
+      "description": "体积均衡",
+      "detail": "中预设在画质和体积之间取平衡，适合常规上传和分享。"
+    },
+    "small": {
+      "label": "低",
+      "description": "更小体积",
+      "detail": "低预设会优先压低体积，适合聊天发送或快速预览。"
+    },
+    "custom": {
+      "label": "自定义",
+      "description": "手动设置码率",
+      "detail": "自定义预设可手动设置视频码率和音频码率；分辨率与帧率可在各自分组中单独自定义。"
+    },
+    "bitrateHint": "约 {{mbps}} Mbps"
+  },
+  "task": {
+    "status": "任务状态",
+    "running": "运行中",
+    "progress": "进度",
+    "speed": "速度",
+    "processed": "已处理",
+    "eta": "预计剩余",
+    "start": "开始压缩",
+    "compressing": "压缩中…",
+    "downloadMp4": "下载 MP4",
+    "outputInfo": "输出信息",
+    "viewOutputInfo": "查看输出信息",
+    "clear": "清除",
+    "cancel": "取消",
+    "stopWorker": "停止当前 Worker 任务",
+    "exportResult": "导出结果",
+    "fileSize": "大小",
+    "compressionRatio": "压缩率",
+    "duration": "耗时"
+  },
+  "dialog": {
+    "cancel": "取消",
+    "confirm": "确认",
+    "runningTaskTitle": "当前任务正在进行中",
+    "runningTaskDesc": "离开、后退或切换文件会中断正在进行的压缩任务。确认继续后，当前任务将无法恢复。",
+    "runningTaskConfirm": "继续并中断任务",
+    "runningTaskCancel": "留在当前任务",
+    "completedTaskTitle": "已有完成的压缩结果",
+    "completedTaskDesc": "开始新任务会清除当前输出结果和下载入口。请确认已经下载或不再需要这个结果。",
+    "completedTaskConfirm": "开始新任务",
+    "completedTaskCancel": "保留结果"
+  },
+  "format": {
+    "unknown": "未知",
+    "calculating": "计算中"
+  },
+  "job": {
+    "waitingVideo": "等待选择视频",
+    "starting": "正在启动压缩 Worker",
+    "completed": "压缩完成",
+    "completedToast": "压缩完成，可以下载输出文件",
+    "workerFailed": "Worker 运行失败",
+    "workerFailedSuggestion": "请刷新页面后重试，或使用最新版桌面 Chrome/Edge。",
+    "cancelled": "任务已取消",
+    "cancelledMessage": "当前压缩任务已经停止。",
+    "cancelledSuggestion": "可以重新选择参数后再次开始。",
+    "unsupportedFormat": "输入格式暂不支持",
+    "unsupportedSuggestion": "请优先使用 MP4/MOV，视频轨建议为 H.264 或 HEVC，音频建议为 AAC。",
+    "encodeFailed": "当前浏览器无法编码目标视频",
+    "encodeSuggestion": "请使用最新版桌面 Chrome/Edge，或降到 1080p30 后重试。",
+    "decodeFailed": "当前浏览器无法解码源视频",
+    "decodeSuggestion": "如果源文件是 HEVC/HDR/MOV，请先转成 SDR H.264 MP4 后再试。",
+    "memoryError": "处理时内存不足",
+    "memorySuggestion": "请尝试更短素材、1080p30、更低码率，或关闭其他占用内存的标签页。",
+    "defaultFailed": "压缩失败",
+    "defaultSuggestion": "请换用最新版桌面 Chrome/Edge，或选择更低帧率和码率后重试。"
+  },
+  "navigation": {
+    "leaveWarning": "转码任务正在进行中，离开页面会中断任务。确定要离开吗？"
+  },
+  "html": {
+    "title": "视频本地压缩 - Buddy Watch"
+  }
+}
