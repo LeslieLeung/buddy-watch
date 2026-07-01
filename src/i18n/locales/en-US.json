@@ -138,6 +138,10 @@
   "job": {
     "waitingVideo": "Waiting for video selection",
     "starting": "Starting compression Worker",
+    "stageProbing": "Parsing container and tracks",
+    "stageDecoding": "Decoding source video",
+    "stageEncoding": "Transcoding and writing output",
+    "stageMuxing": "Muxing MP4",
     "completed": "Compression complete",
     "completedToast": "Compression complete, output file ready for download",
     "workerFailed": "Worker Run Failed",

@@ -138,6 +138,10 @@
   "job": {
     "waitingVideo": "等待选择视频",
     "starting": "正在启动压缩 Worker",
+    "stageProbing": "正在解析容器和轨道",
+    "stageDecoding": "正在解码源视频",
+    "stageEncoding": "正在转码并写入输出",
+    "stageMuxing": "正在封装 MP4",
     "completed": "压缩完成",
     "completedToast": "压缩完成，可以下载输出文件",
     "workerFailed": "Worker 运行失败",

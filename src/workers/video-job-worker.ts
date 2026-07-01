@@ -45,7 +45,6 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       processedSeconds: 0,
       speed: null,
       etaSeconds: null,
-      message: '正在解析容器和轨道',
     })
 
     const input = new Input({
@@ -110,12 +109,6 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         processedSeconds,
         speed,
         etaSeconds,
-        message:
-          stage === 'muxing'
-            ? '正在封装 MP4'
-            : stage === 'encoding'
-              ? '正在转码并写入输出'
-              : '正在解码源视频',
       })
     }
 

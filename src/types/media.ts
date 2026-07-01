@@ -71,7 +71,7 @@ export type JobProgress = {
   processedSeconds: number
   speed: number | null
   etaSeconds: number | null
-  message: string
+  message?: string
 }
 
 export type JobResult = {

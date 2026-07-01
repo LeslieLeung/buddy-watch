@@ -6,11 +6,29 @@ import type {
   FailureInfo,
   JobProgress,
   JobResult,
+  JobStage,
   OutputConfig,
   VideoMetadata,
   WorkerRequest,
   WorkerResponse,
 } from '@/types/media'
+
+const STAGE_MESSAGE_KEYS: Record<JobStage, string> = {
+  idle: 'job.waitingVideo',
+  probing: 'job.stageProbing',
+  ready: 'job.waitingVideo',
+  starting: 'job.starting',
+  decoding: 'job.stageDecoding',
+  encoding: 'job.stageEncoding',
+  muxing: 'job.stageMuxing',
+  completed: 'job.completed',
+  failed: 'job.defaultFailed',
+  canceled: 'job.cancelled',
+}
+
+function messageForStage(stage: JobStage): string {
+  return i18n.t(STAGE_MESSAGE_KEYS[stage] ?? 'job.waitingVideo')
+}
 
 const idleProgress: JobProgress = {
   stage: 'idle',
@@ -18,7 +36,7 @@ const idleProgress: JobProgress = {
   processedSeconds: 0,
   speed: null,
   etaSeconds: null,
-  message: i18n.t('job.waitingVideo'),
+  message: messageForStage('idle'),
 }
 
 export function useVideoJob() {
@@ -45,7 +63,7 @@ export function useVideoJob() {
         processedSeconds: 0,
         speed: null,
         etaSeconds: null,
-        message: i18n.t('job.starting'),
+        message: messageForStage('starting'),
       })
 
       const worker = new Worker(new URL('../workers/video-job-worker.ts', import.meta.url), {
@@ -57,7 +75,7 @@ export function useVideoJob() {
         const message = event.data
 
         if (message.type === 'progress') {
-          setProgress(message.progress)
+          setProgress({ ...message.progress, message: messageForStage(message.progress.stage) })
           return
         }
 
@@ -69,7 +87,7 @@ export function useVideoJob() {
             processedSeconds: metadata.duration ?? 0,
             speed: null,
             etaSeconds: 0,
-            message: i18n.t('job.completed'),
+            message: messageForStage('completed'),
           })
           setRunning(false)
           cleanupWorker()
@@ -99,7 +117,7 @@ export function useVideoJob() {
           processedSeconds: 0,
           speed: null,
           etaSeconds: null,
-          message: i18n.t('job.cancelled'),
+          message: messageForStage('canceled'),
         })
         setRunning(false)
         cleanupWorker()
@@ -138,7 +156,7 @@ export function useVideoJob() {
       processedSeconds: 0,
       speed: null,
       etaSeconds: null,
-      message: i18n.t('job.cancelled'),
+      message: messageForStage('canceled'),
     })
   }, [cleanupWorker])
 
