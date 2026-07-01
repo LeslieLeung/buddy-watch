@@ -97,9 +97,9 @@ export function useVideoJob() {
 
         if (message.type === 'failed') {
           const failure: FailureInfo = {
-            title: i18n.t(message.failure.titleKey),
+            titleKey: message.failure.titleKey,
             message: message.failure.message,
-            suggestion: i18n.t(message.failure.suggestionKey),
+            suggestionKey: message.failure.suggestionKey,
           }
           setFailure(failure)
           setProgress({
@@ -112,7 +112,7 @@ export function useVideoJob() {
           })
           setRunning(false)
           cleanupWorker()
-          toast.error(failure.title)
+          toast.error(i18n.t(failure.titleKey))
           return
         }
 
@@ -129,10 +129,10 @@ export function useVideoJob() {
       }
 
       worker.onerror = (event) => {
-        const nextFailure = {
-          title: i18n.t('job.workerFailed'),
+        const nextFailure: FailureInfo = {
+          titleKey: 'job.workerFailed',
           message: event.message,
-          suggestion: i18n.t('job.workerFailedSuggestion'),
+          suggestionKey: 'job.workerFailedSuggestion',
         }
         setFailure(nextFailure)
         setRunning(false)

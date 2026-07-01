@@ -84,9 +84,9 @@ export type JobResult = {
 }
 
 export type FailureInfo = {
-  title: string
+  titleKey: string
   message: string
-  suggestion: string
+  suggestionKey: string
 }
 
 export type WorkerFailure = {

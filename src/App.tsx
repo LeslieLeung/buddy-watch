@@ -496,10 +496,10 @@ const STEPS: { id: StepId }[] = [
 ]
 
 type ConfirmationDialogState = {
-  title: string
-  description: string
-  confirmLabel: string
-  cancelLabel?: string
+  titleKey: string
+  descriptionKey: string
+  confirmLabelKey: string
+  cancelLabelKey?: string
   destructive?: boolean
 }
 
@@ -554,23 +554,23 @@ function App() {
 
   const runningTaskConfirmation = useMemo<ConfirmationDialogState>(
     () => ({
-      title: t('dialog.runningTaskTitle'),
-      description: t('dialog.runningTaskDesc'),
-      confirmLabel: t('dialog.runningTaskConfirm'),
-      cancelLabel: t('dialog.runningTaskCancel'),
+      titleKey: 'dialog.runningTaskTitle',
+      descriptionKey: 'dialog.runningTaskDesc',
+      confirmLabelKey: 'dialog.runningTaskConfirm',
+      cancelLabelKey: 'dialog.runningTaskCancel',
       destructive: true,
     }),
-    [t],
+    [],
   )
 
   const completedTaskConfirmation = useMemo<ConfirmationDialogState>(
     () => ({
-      title: t('dialog.completedTaskTitle'),
-      description: t('dialog.completedTaskDesc'),
-      confirmLabel: t('dialog.completedTaskConfirm'),
-      cancelLabel: t('dialog.completedTaskCancel'),
+      titleKey: 'dialog.completedTaskTitle',
+      descriptionKey: 'dialog.completedTaskDesc',
+      confirmLabelKey: 'dialog.completedTaskConfirm',
+      cancelLabelKey: 'dialog.completedTaskCancel',
     }),
-    [t],
+    [],
   )
 
   const closeConfirmationDialog = useCallback((confirmed: boolean) => {
@@ -1272,10 +1272,10 @@ function App() {
                 {failure ? (
                   <Alert variant="destructive">
                     <AlertCircleIcon />
-                    <AlertTitle>{failure.title}</AlertTitle>
+                    <AlertTitle>{t(failure.titleKey)}</AlertTitle>
                     <AlertDescription className="flex flex-col gap-1">
                       <span>{failure.message}</span>
-                      <span>{failure.suggestion}</span>
+                      <span>{t(failure.suggestionKey)}</span>
                     </AlertDescription>
                   </Alert>
                 ) : null}
@@ -1397,12 +1397,14 @@ function App() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{confirmationDialog?.title}</AlertDialogTitle>
-            <AlertDialogDescription>{confirmationDialog?.description}</AlertDialogDescription>
+            <AlertDialogTitle>{confirmationDialog ? t(confirmationDialog.titleKey) : ''}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmationDialog ? t(confirmationDialog.descriptionKey) : ''}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => closeConfirmationDialog(false)}>
-              {confirmationDialog?.cancelLabel ?? t('dialog.cancel')}
+              {confirmationDialog?.cancelLabelKey ? t(confirmationDialog.cancelLabelKey) : t('dialog.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               className={
@@ -1412,7 +1414,7 @@ function App() {
               }
               onClick={() => closeConfirmationDialog(true)}
             >
-              {confirmationDialog?.confirmLabel ?? t('dialog.confirm')}
+              {confirmationDialog ? t(confirmationDialog.confirmLabelKey) : t('dialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
