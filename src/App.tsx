@@ -392,7 +392,7 @@ function CapabilityStatusButton({
               </span>
               {capabilities.warnings.map((warning) => (
                 <span key={warning} className="text-xs leading-5 text-amber-600/80 dark:text-amber-400/80">
-                  {warning}
+                  {t(warning)}
                 </span>
               ))}
             </div>

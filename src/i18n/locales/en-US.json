@@ -2,7 +2,8 @@
   "app": {
     "title": "Video Local Compression",
     "themeToggle": "Toggle theme",
-    "stepsLabel": "Workflow steps"
+    "stepsLabel": "Workflow steps",
+    "languageLabel": "Language"
   },
   "steps": {
     "select": "Select File",

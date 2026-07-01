@@ -2,7 +2,8 @@
   "app": {
     "title": "视频本地压缩",
     "themeToggle": "切换主题",
-    "stepsLabel": "流程步骤"
+    "stepsLabel": "流程步骤",
+    "languageLabel": "语言"
   },
   "steps": {
     "select": "选择文件",

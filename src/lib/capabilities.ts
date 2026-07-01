@@ -1,6 +1,5 @@
 import { canEncodeVideo } from 'mediabunny'
 
-import i18n from '@/i18n'
 import { classifyCapabilities, clonePreset } from '@/lib/presets'
 import type { CapabilityReport, OutputConfig, VideoMetadata } from '@/types/media'
 
@@ -33,23 +32,23 @@ export async function probeCapabilities(metadata?: VideoMetadata): Promise<Capab
   const warnings: string[] = []
 
   if (!webCodecs) {
-    warnings.push(i18n.t('capability.webCodecsWarning'))
+    warnings.push('capability.webCodecsWarning')
   }
 
   if (!webGpu) {
-    warnings.push(i18n.t('capability.webGpuWarning'))
+    warnings.push('capability.webGpuWarning')
   }
 
   if (metadata?.video?.hdr) {
-    warnings.push(i18n.t('capability.hdrWarning'))
+    warnings.push('capability.hdrWarning')
   }
 
   if (!h264Encode1080p60 && h264Encode1080p30) {
-    warnings.push(i18n.t('capability.h264_1080p60_Warning'))
+    warnings.push('capability.h264_1080p60_Warning')
   }
 
   if (!h264Encode1080p60 && !h264Encode1080p30) {
-    warnings.push(i18n.t('capability.h264None'))
+    warnings.push('capability.h264None')
   }
 
   const level = classifyCapabilities({
