@@ -29,7 +29,7 @@
     "clickToClose": "点击任意处关闭",
     "webCodecsWarning": "当前浏览器缺少 WebCodecs，无法执行本地压缩。",
     "webGpuWarning": "WebGPU 不可用，将使用 Mediabunny/WebCodecs 可行路径并标记为降级。",
-    "hdrWarning": "检测到 HDR 素材，输出色彩可能不符合预期。",
+    "hdrWarning": "检测到 HDR 素材，压缩时将自动转换为 SDR 输出。",
     "h264_1080p60_Warning": "1080p60 H.264 编码不可用，已建议回退到 1080p30。",
     "h264None": "H.264 MP4 编码不可用，请使用最新版桌面 Chrome/Edge。"
   },
@@ -72,10 +72,10 @@
     "audioBitrate": "音频码率",
     "videoLabel": "视频",
     "audioLabel": "音频",
-    "estimatedSize": "预估大小",
     "sourceSize": "源尺寸",
     "sourcePrefix": "源",
-    "parameters": "输出参数"
+    "parameters": "输出参数",
+    "estimatedSize": "预计大小"
   },
   "presets": {
     "quality": {

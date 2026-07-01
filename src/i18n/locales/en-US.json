@@ -29,7 +29,7 @@
     "clickToClose": "Click anywhere to close",
     "webCodecsWarning": "This browser lacks WebCodecs and cannot perform local compression.",
     "webGpuWarning": "WebGPU is unavailable; will use Mediabunny/WebCodecs feasible path with degradation flag.",
-    "hdrWarning": "HDR source detected; output colors may not match expectations.",
+    "hdrWarning": "HDR source detected; will be automatically converted to SDR during compression.",
     "h264_1080p60_Warning": "1080p60 H.264 encoding is unavailable; fallback to 1080p30 recommended.",
     "h264None": "H.264 MP4 encoding is unavailable. Please use the latest desktop Chrome/Edge."
   },
@@ -72,10 +72,10 @@
     "audioBitrate": "Audio Bitrate",
     "videoLabel": "Video",
     "audioLabel": "Audio",
-    "estimatedSize": "Estimated Size",
     "sourceSize": "Source Size",
     "sourcePrefix": "Src",
-    "parameters": "Output Parameters"
+    "parameters": "Output Parameters",
+    "estimatedSize": "Estimated Size"
   },
   "presets": {
     "quality": {

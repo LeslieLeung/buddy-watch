@@ -1217,18 +1217,31 @@ function App() {
                       </div>
                     )}
                   </div>
+
                 </CardContent>
-                <CardFooter className="flex shrink-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{config.width}×{config.height}</span>
-                    <span aria-hidden>·</span>
-                    <span>{config.frameRate} fps</span>
-                    <span aria-hidden>·</span>
-                    <span>{config.videoBitrateMbps} Mbps</span>
-                  </div>
-                  <div className="shrink-0 sm:text-right">
-                    <p className="text-[11px] leading-none text-muted-foreground">{t('output.estimatedSize')}</p>
-                    <p className="text-base font-semibold leading-tight tabular-nums">{formatBytes(estimatedOutput)}</p>
+                <CardFooter className="flex shrink-0 flex-col items-stretch gap-3">
+                  {capabilities?.warnings.length ? (
+                    <div className="flex flex-col gap-1">
+                      {capabilities.warnings.map((warning) => (
+                        <span key={warning} className="flex items-start gap-1.5 text-xs text-amber-600/90 dark:text-amber-400/80">
+                          <AlertCircleIcon className="mt-px size-3.5 shrink-0" />
+                          {t(warning)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{config.width}×{config.height}</span>
+                      <span aria-hidden>·</span>
+                      <span>{config.frameRate} fps</span>
+                      <span aria-hidden>·</span>
+                      <span>{config.videoBitrateMbps} Mbps</span>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-[11px] leading-none text-muted-foreground">{t('output.estimatedSize')}</p>
+                      <p className="text-base font-semibold leading-tight tabular-nums">{formatBytes(estimatedOutput)}</p>
+                    </div>
                   </div>
                 </CardFooter>
               </Card>
