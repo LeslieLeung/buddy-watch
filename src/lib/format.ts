@@ -1,6 +1,8 @@
+import i18n from '@/i18n'
+
 export function formatBytes(bytes: number | null | undefined) {
   if (!bytes || bytes <= 0) {
-    return '未知'
+    return i18n.t('format.unknown')
   }
 
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -17,7 +19,7 @@ export function formatBytes(bytes: number | null | undefined) {
 
 export function formatDuration(seconds: number | null | undefined) {
   if (seconds == null || Number.isNaN(seconds) || seconds < 0) {
-    return '未知'
+    return i18n.t('format.unknown')
   }
 
   const total = Math.round(seconds)
@@ -34,7 +36,7 @@ export function formatDuration(seconds: number | null | undefined) {
 
 export function formatRatio(value: number | null | undefined) {
   if (!value || value <= 0) {
-    return '未知'
+    return i18n.t('format.unknown')
   }
 
   return `${Math.round((1 - value) * 100)}%`
@@ -42,7 +44,7 @@ export function formatRatio(value: number | null | undefined) {
 
 export function formatSpeed(speed: number | null | undefined) {
   if (!speed || !Number.isFinite(speed)) {
-    return '计算中'
+    return i18n.t('format.calculating')
   }
 
   return `${speed.toFixed(2)}x`

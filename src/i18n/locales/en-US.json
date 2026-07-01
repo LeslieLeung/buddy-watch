@@ -1,0 +1,170 @@
+{
+  "app": {
+    "title": "Video Local Compression",
+    "themeToggle": "Toggle theme",
+    "stepsLabel": "Workflow steps",
+    "languageLabel": "Language"
+  },
+  "steps": {
+    "select": "Select File",
+    "config": "Configure",
+    "compress": "Compress",
+    "download": "Download"
+  },
+  "capability": {
+    "hardwareAccel": "Hardware Acceleration",
+    "supported": "Supported",
+    "notSupported": "Not Supported",
+    "detecting": "Detecting browser capabilities…",
+    "fullSupport": "Full Support · {{passCount}}/{{totalCount}} checks passed",
+    "partialSupport": "Partial Support · {{passCount}}/{{totalCount}} checks passed",
+    "capabilityCheck": "Capability Check",
+    "checking": "Checking",
+    "checked": "Checked",
+    "pending": "Pending",
+    "hwAccelOk": "This browser supports WebCodecs decode/encode and H.264 output. Compression will request hardware acceleration; actual hardware usage depends on the browser and system. Usually faster with lower CPU and power consumption.",
+    "hwAccelBad": "This browser lacks the required APIs for local compression, input decoding, or H.264 encoding. Compression may fail or fall back to software paths. Usually slower with higher CPU and power consumption.",
+    "hwAccelDetecting": "Detecting local encode/decode capabilities of this browser.",
+    "compatibilityWarnings": "Compatibility Warnings",
+    "clickToClose": "Click anywhere to close",
+    "webCodecsWarning": "This browser lacks WebCodecs and cannot perform local compression.",
+    "webGpuWarning": "WebGPU is unavailable; will use Mediabunny/WebCodecs feasible path with degradation flag.",
+    "hdrWarning": "HDR source detected; output colors may not match expectations.",
+    "h264_1080p60_Warning": "1080p60 H.264 encoding is unavailable; fallback to 1080p30 recommended.",
+    "h264None": "H.264 MP4 encoding is unavailable. Please use the latest desktop Chrome/Edge."
+  },
+  "input": {
+    "title": "Input Video",
+    "description": "Supports MP4 / MOV. Source video info is read automatically after selection.",
+    "sourceInfo": "Source Video Info",
+    "probing": "Reading container, tracks, and browser capabilities.",
+    "idleHint": "Container, track, and codec info shown after selecting a video.",
+    "reading": "Reading",
+    "pending": "Pending",
+    "readingEllipsis": "Reading…",
+    "dropZone": "Drag video here, or click to select",
+    "dropZoneRelease": "Release to select file",
+    "supportedFormats": "Supports MP4 / MOV format",
+    "noVideoTrack": "No video track",
+    "noAudio": "No audio",
+    "parseFailed": "File parse failed"
+  },
+  "metadata": {
+    "container": "Container",
+    "duration": "Duration",
+    "fileSize": "Source Size",
+    "video": "Video",
+    "audio": "Audio",
+    "rotationHdr": "Rotation/HDR"
+  },
+  "output": {
+    "title": "Output Settings",
+    "description": "Pick a quality preset first, then fine-tune resolution, frame rate, and bitrate.",
+    "qualityPreset": "Quality Preset",
+    "resolution": "Resolution",
+    "custom": "Custom",
+    "width": "Width",
+    "height": "Height",
+    "frameRate": "Frame Rate",
+    "customFrameRate": "Custom Frame Rate",
+    "bitrate": "Bitrate",
+    "videoBitrate": "Video Bitrate",
+    "audioBitrate": "Audio Bitrate",
+    "videoLabel": "Video",
+    "audioLabel": "Audio",
+    "estimatedSize": "Estimated Size",
+    "sourceSize": "Source Size",
+    "sourcePrefix": "Src",
+    "parameters": "Output Parameters"
+  },
+  "presets": {
+    "quality": {
+      "label": "High",
+      "description": "Quality Priority",
+      "detail": "High preset increases video and audio bitrates, better for motion-heavy footage or re-editing."
+    },
+    "upload": {
+      "label": "Medium",
+      "description": "Balanced",
+      "detail": "Medium preset balances quality and file size, suitable for regular upload and sharing."
+    },
+    "small": {
+      "label": "Low",
+      "description": "Smaller Size",
+      "detail": "Low preset prioritizes small file size, suitable for chat sharing or quick preview."
+    },
+    "custom": {
+      "label": "Custom",
+      "description": "Manual Bitrate",
+      "detail": "Custom preset allows manual video and audio bitrate settings. Resolution and frame rate can be customized separately in their groups."
+    },
+    "bitrateHint": "~{{mbps}} Mbps"
+  },
+  "task": {
+    "status": "Task Status",
+    "running": "Running",
+    "progress": "Progress",
+    "speed": "Speed",
+    "processed": "Processed",
+    "eta": "Est. Remaining",
+    "start": "Start Compression",
+    "compressing": "Compressing…",
+    "downloadMp4": "Download MP4",
+    "outputInfo": "Output Info",
+    "viewOutputInfo": "View output info",
+    "clear": "Clear",
+    "cancel": "Cancel",
+    "stopWorker": "Stop current Worker task",
+    "exportResult": "Export Result",
+    "fileSize": "Size",
+    "compressionRatio": "Ratio",
+    "duration": "Time"
+  },
+  "dialog": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "runningTaskTitle": "Task in Progress",
+    "runningTaskDesc": "Leaving, navigating back, or switching files will interrupt the ongoing compression task. Once confirmed, the current task cannot be recovered.",
+    "runningTaskConfirm": "Proceed & Interrupt",
+    "runningTaskCancel": "Stay on Current Task",
+    "completedTaskTitle": "Completed Compression Available",
+    "completedTaskDesc": "Starting a new task will clear the current output and download entry. Please ensure you have downloaded or no longer need this result.",
+    "completedTaskConfirm": "Start New Task",
+    "completedTaskCancel": "Keep Result"
+  },
+  "format": {
+    "unknown": "Unknown",
+    "calculating": "Calculating"
+  },
+  "job": {
+    "waitingVideo": "Waiting for video selection",
+    "starting": "Starting compression Worker",
+    "stageProbing": "Parsing container and tracks",
+    "stageDecoding": "Decoding source video",
+    "stageEncoding": "Transcoding and writing output",
+    "stageMuxing": "Muxing MP4",
+    "completed": "Compression complete",
+    "completedToast": "Compression complete, output file ready for download",
+    "workerFailed": "Worker Run Failed",
+    "workerFailedSuggestion": "Please refresh the page and try again, or use the latest desktop Chrome/Edge.",
+    "cancelled": "Task Cancelled",
+    "cancelledMessage": "The current compression task has been stopped.",
+    "cancelledSuggestion": "You can adjust parameters and start again.",
+    "unsupportedFormat": "Input Format Not Supported",
+    "unsupportedSuggestion": "Please use MP4/MOV with H.264 or HEVC video and AAC audio.",
+    "encodeFailed": "Browser Cannot Encode Target Video",
+    "encodeSuggestion": "Please use the latest desktop Chrome/Edge, or lower to 1080p30 and retry.",
+    "decodeFailed": "Browser Cannot Decode Source Video",
+    "decodeSuggestion": "If the source is HEVC/HDR/MOV, please convert to SDR H.264 MP4 first.",
+    "memoryError": "Insufficient Memory During Processing",
+    "memorySuggestion": "Try shorter clips, 1080p30, lower bitrate, or close other memory-heavy tabs.",
+    "defaultFailed": "Compression Failed",
+    "defaultSuggestion": "Please use the latest desktop Chrome/Edge, or select lower frame rate and bitrate and retry."
+  },
+  "navigation": {
+    "leaveWarning": "A transcoding task is in progress. Leaving the page will interrupt it. Are you sure you want to leave?"
+  },
+  "html": {
+    "title": "Video Local Compression - Buddy Watch"
+  }
+}

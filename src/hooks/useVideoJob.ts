@@ -1,15 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import i18n from '@/i18n'
 import type {
   FailureInfo,
   JobProgress,
   JobResult,
+  JobStage,
   OutputConfig,
   VideoMetadata,
   WorkerRequest,
   WorkerResponse,
 } from '@/types/media'
+
+export const STAGE_MESSAGE_KEYS: Record<JobStage, string> = {
+  idle: 'job.waitingVideo',
+  probing: 'job.stageProbing',
+  ready: 'job.waitingVideo',
+  starting: 'job.starting',
+  decoding: 'job.stageDecoding',
+  encoding: 'job.stageEncoding',
+  muxing: 'job.stageMuxing',
+  completed: 'job.completed',
+  failed: 'job.defaultFailed',
+  canceled: 'job.cancelled',
+}
+
+function keyForStage(stage: JobStage): string {
+  return STAGE_MESSAGE_KEYS[stage] ?? 'job.waitingVideo'
+}
 
 const idleProgress: JobProgress = {
   stage: 'idle',
@@ -17,7 +36,7 @@ const idleProgress: JobProgress = {
   processedSeconds: 0,
   speed: null,
   etaSeconds: null,
-  message: '等待选择视频',
+  messageKey: keyForStage('idle'),
 }
 
 export function useVideoJob() {
@@ -44,7 +63,7 @@ export function useVideoJob() {
         processedSeconds: 0,
         speed: null,
         etaSeconds: null,
-        message: '正在启动压缩 Worker',
+        messageKey: keyForStage('starting'),
       })
 
       const worker = new Worker(new URL('../workers/video-job-worker.ts', import.meta.url), {
@@ -56,7 +75,7 @@ export function useVideoJob() {
         const message = event.data
 
         if (message.type === 'progress') {
-          setProgress(message.progress)
+          setProgress({ ...message.progress, messageKey: keyForStage(message.progress.stage) })
           return
         }
 
@@ -68,27 +87,32 @@ export function useVideoJob() {
             processedSeconds: metadata.duration ?? 0,
             speed: null,
             etaSeconds: 0,
-            message: '压缩完成',
+            messageKey: keyForStage('completed'),
           })
           setRunning(false)
           cleanupWorker()
-          toast.success('压缩完成，可以下载输出文件')
+          toast.success(i18n.t('job.completedToast'))
           return
         }
 
         if (message.type === 'failed') {
-          setFailure(message.failure)
+          const failure: FailureInfo = {
+            titleKey: message.failure.titleKey,
+            message: message.failure.message,
+            suggestionKey: message.failure.suggestionKey,
+          }
+          setFailure(failure)
           setProgress({
             stage: 'failed',
             progress: 0,
             processedSeconds: 0,
             speed: null,
             etaSeconds: null,
-            message: message.failure.title,
+            messageKey: message.failure.titleKey,
           })
           setRunning(false)
           cleanupWorker()
-          toast.error(message.failure.title)
+          toast.error(i18n.t(failure.titleKey))
           return
         }
 
@@ -98,17 +122,17 @@ export function useVideoJob() {
           processedSeconds: 0,
           speed: null,
           etaSeconds: null,
-          message: '任务已取消',
+          messageKey: keyForStage('canceled'),
         })
         setRunning(false)
         cleanupWorker()
       }
 
       worker.onerror = (event) => {
-        const nextFailure = {
-          title: 'Worker 运行失败',
+        const nextFailure: FailureInfo = {
+          titleKey: 'job.workerFailed',
           message: event.message,
-          suggestion: '请刷新页面后重试，或使用最新版桌面 Chrome/Edge。',
+          suggestionKey: 'job.workerFailedSuggestion',
         }
         setFailure(nextFailure)
         setRunning(false)
@@ -137,7 +161,7 @@ export function useVideoJob() {
       processedSeconds: 0,
       speed: null,
       etaSeconds: null,
-      message: '任务已取消',
+      messageKey: keyForStage('canceled'),
     })
   }, [cleanupWorker])
 

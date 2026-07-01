@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-const LEAVE_JOB_MESSAGE = '转码任务正在进行中，离开页面会中断任务。确定要离开吗？'
+import i18n from '@/i18n'
+
 const JOB_GUARD_STATE_KEY = '__buddyWatchVideoJobGuard'
 
 type NavigationConfirmation = () => boolean | Promise<boolean>
@@ -18,7 +19,7 @@ export function usePreventJobNavigation(active: boolean, confirmNavigation?: Nav
       return confirmNavigation()
     }
 
-    return window.confirm(LEAVE_JOB_MESSAGE)
+    return window.confirm(i18n.t('navigation.leaveWarning'))
   }, [active, confirmNavigation])
 
   useEffect(() => {
