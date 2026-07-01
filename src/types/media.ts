@@ -71,7 +71,7 @@ export type JobProgress = {
   processedSeconds: number
   speed: number | null
   etaSeconds: number | null
-  message?: string
+  messageKey?: string
 }
 
 export type JobResult = {
@@ -89,6 +89,12 @@ export type FailureInfo = {
   suggestion: string
 }
 
+export type WorkerFailure = {
+  titleKey: string
+  message: string
+  suggestionKey: string
+}
+
 export type WorkerRequest =
   | {
       type: 'start'
@@ -101,5 +107,5 @@ export type WorkerRequest =
 export type WorkerResponse =
   | { type: 'progress'; progress: JobProgress }
   | { type: 'complete'; result: JobResult }
-  | { type: 'failed'; failure: FailureInfo }
+  | { type: 'failed'; failure: WorkerFailure }
   | { type: 'canceled' }

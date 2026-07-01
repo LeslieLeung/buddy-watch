@@ -61,7 +61,7 @@ import { formatBytes, formatDuration, formatPercent, formatRatio, formatSpeed } 
 import { probeCapabilities } from '@/lib/capabilities'
 import { probeMediaFile } from '@/lib/mediaProbe'
 import { clonePreset, estimateOutputBytes } from '@/lib/presets'
-import { useVideoJob } from '@/hooks/useVideoJob'
+import { STAGE_MESSAGE_KEYS, useVideoJob } from '@/hooks/useVideoJob'
 import { usePreventJobNavigation } from '@/hooks/usePreventJobNavigation'
 import { type CapabilityReport, type OutputConfig, type PresetId, type VideoMetadata } from '@/types/media'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -1248,7 +1248,9 @@ function App() {
                     </span>
                   )}
                 </CardTitle>
-                <CardDescription>{progress.message}</CardDescription>
+                <CardDescription>
+                  {t(progress.messageKey ?? STAGE_MESSAGE_KEYS[progress.stage])}
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <Progress

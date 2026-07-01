@@ -13,7 +13,7 @@ import type {
   WorkerResponse,
 } from '@/types/media'
 
-const STAGE_MESSAGE_KEYS: Record<JobStage, string> = {
+export const STAGE_MESSAGE_KEYS: Record<JobStage, string> = {
   idle: 'job.waitingVideo',
   probing: 'job.stageProbing',
   ready: 'job.waitingVideo',
@@ -26,8 +26,8 @@ const STAGE_MESSAGE_KEYS: Record<JobStage, string> = {
   canceled: 'job.cancelled',
 }
 
-function messageForStage(stage: JobStage): string {
-  return i18n.t(STAGE_MESSAGE_KEYS[stage] ?? 'job.waitingVideo')
+function keyForStage(stage: JobStage): string {
+  return STAGE_MESSAGE_KEYS[stage] ?? 'job.waitingVideo'
 }
 
 const idleProgress: JobProgress = {
@@ -36,7 +36,7 @@ const idleProgress: JobProgress = {
   processedSeconds: 0,
   speed: null,
   etaSeconds: null,
-  message: messageForStage('idle'),
+  messageKey: keyForStage('idle'),
 }
 
 export function useVideoJob() {
@@ -63,7 +63,7 @@ export function useVideoJob() {
         processedSeconds: 0,
         speed: null,
         etaSeconds: null,
-        message: messageForStage('starting'),
+        messageKey: keyForStage('starting'),
       })
 
       const worker = new Worker(new URL('../workers/video-job-worker.ts', import.meta.url), {
@@ -75,7 +75,7 @@ export function useVideoJob() {
         const message = event.data
 
         if (message.type === 'progress') {
-          setProgress({ ...message.progress, message: messageForStage(message.progress.stage) })
+          setProgress({ ...message.progress, messageKey: keyForStage(message.progress.stage) })
           return
         }
 
@@ -87,7 +87,7 @@ export function useVideoJob() {
             processedSeconds: metadata.duration ?? 0,
             speed: null,
             etaSeconds: 0,
-            message: messageForStage('completed'),
+            messageKey: keyForStage('completed'),
           })
           setRunning(false)
           cleanupWorker()
@@ -96,18 +96,23 @@ export function useVideoJob() {
         }
 
         if (message.type === 'failed') {
-          setFailure(message.failure)
+          const failure: FailureInfo = {
+            title: i18n.t(message.failure.titleKey),
+            message: message.failure.message,
+            suggestion: i18n.t(message.failure.suggestionKey),
+          }
+          setFailure(failure)
           setProgress({
             stage: 'failed',
             progress: 0,
             processedSeconds: 0,
             speed: null,
             etaSeconds: null,
-            message: message.failure.title,
+            messageKey: message.failure.titleKey,
           })
           setRunning(false)
           cleanupWorker()
-          toast.error(message.failure.title)
+          toast.error(failure.title)
           return
         }
 
@@ -117,7 +122,7 @@ export function useVideoJob() {
           processedSeconds: 0,
           speed: null,
           etaSeconds: null,
-          message: messageForStage('canceled'),
+          messageKey: keyForStage('canceled'),
         })
         setRunning(false)
         cleanupWorker()
@@ -156,7 +161,7 @@ export function useVideoJob() {
       processedSeconds: 0,
       speed: null,
       etaSeconds: null,
-      message: messageForStage('canceled'),
+      messageKey: keyForStage('canceled'),
     })
   }, [cleanupWorker])
 

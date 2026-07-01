@@ -1,5 +1,5 @@
 import i18n from '@/i18n'
-import type { CapabilityLevel, FailureInfo, OutputConfig, PresetId } from '@/types/media'
+import type { CapabilityLevel, OutputConfig, PresetId } from '@/types/media'
 
 export const OUTPUT_PRESETS: Record<PresetId, OutputConfig> = {
   upload: {
@@ -97,55 +97,4 @@ export function classifyCapabilities(input: {
   }
 
   return input.webCodecs ? 'C' : 'D'
-}
-
-export function mapErrorToFailure(error: unknown): FailureInfo {
-  const message = error instanceof Error ? error.message : String(error)
-  const lower = message.toLowerCase()
-
-  if (lower.includes('canceled') || lower.includes('cancelled')) {
-    return {
-      title: i18n.t('job.cancelled'),
-      message: i18n.t('job.cancelledMessage'),
-      suggestion: i18n.t('job.cancelledSuggestion'),
-    }
-  }
-
-  if (lower.includes('unsupported') || lower.includes('format')) {
-    return {
-      title: i18n.t('job.unsupportedFormat'),
-      message,
-      suggestion: i18n.t('job.unsupportedSuggestion'),
-    }
-  }
-
-  if (lower.includes('encode') || lower.includes('encodable')) {
-    return {
-      title: i18n.t('job.encodeFailed'),
-      message,
-      suggestion: i18n.t('job.encodeSuggestion'),
-    }
-  }
-
-  if (lower.includes('decode') || lower.includes('decodable')) {
-    return {
-      title: i18n.t('job.decodeFailed'),
-      message,
-      suggestion: i18n.t('job.decodeSuggestion'),
-    }
-  }
-
-  if (lower.includes('memory') || lower.includes('quota')) {
-    return {
-      title: i18n.t('job.memoryError'),
-      message,
-      suggestion: i18n.t('job.memorySuggestion'),
-    }
-  }
-
-  return {
-    title: i18n.t('job.defaultFailed'),
-    message,
-    suggestion: i18n.t('job.defaultSuggestion'),
-  }
 }

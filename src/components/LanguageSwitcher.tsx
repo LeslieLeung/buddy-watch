@@ -7,17 +7,13 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
-
-function supportedLanguage(lang: string) {
-  if (lang.startsWith('zh')) return 'zh-CN'
-  return 'en-US'
-}
+import { normalizeLanguage } from '@/i18n'
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation()
 
   return (
-    <Select value={supportedLanguage(i18n.language)} onValueChange={i18n.changeLanguage}>
+    <Select value={normalizeLanguage(i18n.language)} onValueChange={i18n.changeLanguage}>
       <SelectTrigger className="size-10! shrink-0 justify-center rounded-lg border border-input bg-transparent p-0 hover:bg-muted/50 dark:hover:bg-input/50 [&>svg:last-child]:hidden [&_[data-slot=select-value]]:sr-only">
         <GlobeIcon className="size-4 shrink-0" />
       </SelectTrigger>

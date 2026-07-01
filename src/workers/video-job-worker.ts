@@ -10,7 +10,7 @@ import {
   type ConversionVideoOptions,
 } from 'mediabunny'
 
-import { mapErrorToFailure } from '@/lib/presets'
+import { mapErrorToFailure } from '@/lib/failures'
 import type { JobProgress, WorkerRequest, WorkerResponse } from '@/types/media'
 
 let activeConversion: Conversion | null = null
