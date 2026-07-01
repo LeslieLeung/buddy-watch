@@ -8,6 +8,7 @@ import {
   Mp4OutputFormat,
   Output,
   type ConversionVideoOptions,
+  type VideoSample,
 } from 'mediabunny'
 
 import { mapErrorToFailure } from '@/lib/failures'
@@ -22,6 +23,21 @@ function post(message: WorkerResponse) {
 
 function progress(update: JobProgress) {
   post({ type: 'progress', progress: update })
+}
+
+/**
+ * Converts an HDR VideoSample to SDR by drawing it to an sRGB OffscreenCanvas.
+ * The browser applies the HDR EOTF (PQ/HLG) and converts the color gamut
+ * (BT.2020 → sRGB), clipping highlights that exceed the SDR range.
+ */
+function convertHdrToSdr(sample: VideoSample): OffscreenCanvas {
+  const w = sample.squarePixelWidth
+  const h = sample.squarePixelHeight
+  const canvas = new OffscreenCanvas(w, h)
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' })
+  if (!ctx) throw new Error('Failed to get 2D context for HDR→SDR conversion')
+  sample.draw(ctx, 0, 0, w, h)
+  return canvas
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
@@ -68,6 +84,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       hardwareAcceleration: 'prefer-hardware',
       forceTranscode: true,
       allowRotationMetadata: false,
+      process: metadata.video?.hdr ? convertHdrToSdr : undefined,
     }
 
     activeConversion = await Conversion.init({
